@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Sign Up – QSC Platform</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <canvas id="photons" aria-hidden="true"></canvas>
+  <header>
+    <h1>Quantum-Safe Cryptography Platform</h1>
+    <nav>
+      <a href="index.html">Home</a>
+      <span class="nav-sep">/</span>
+      <a href="login.html">Login</a>
+    </nav>
+  </header>
+  <main style="max-width:650px; margin:2rem auto;">
+    <section>
+      <h2>Create Account</h2>
+      <form id="signup-form">
+        <label for="signup-name">Full Name</label>
+        <input type="text" id="signup-name" required>
+        <label for="signup-email">Email</label>
+        <input type="email" id="signup-email" required>
+        <label for="signup-password">Password</label>
+        <input type="password" id="signup-password" minlength="6" required>
+        <label for="signup-confirm">Confirm Password</label>
+        <input type="password" id="signup-confirm" minlength="6" required>
+        <label for="signup-org">Organization (optional)</label>
+        <input type="text" id="signup-org" placeholder="Company / University">
+        <button type="submit">Sign Up</button>
+        <p style="margin-top:1rem; font-size:.85rem;">Already have an account? <a href="login.html">Login</a></p>
+      </form>
+      <pre id="signup-result"></pre>
+    </section>
+  </main>
+  <script src="script.js"></script>
+</body>
+</html>

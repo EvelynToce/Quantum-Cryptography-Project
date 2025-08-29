@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>QSC Platform – Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <canvas id="plasma-bg" aria-hidden="true"></canvas>
+  <canvas id="photons" aria-hidden="true"></canvas>
+  <header>
+    <h1>Quantum-Safe Cryptography Platform</h1>
+    <nav class="utility-nav">
+      <a href="login.html">Login</a><span class="nav-sep">/</span><a href="signup.html">Sign Up</a>
+    </nav>
+  </header>
+  <nav class="main-nav" aria-label="Primary">
+    <ul class="menu-root">
+      <li><a href="#" class="nav-home" aria-current="page">Home</a></li>
+      <li class="dropdown">
+        <button class="drop-toggle" aria-haspopup="true" aria-expanded="false">Algorithms ▾</button>
+        <ul class="dropdown-menu" role="menu">
+          <li role="none"><a role="menuitem" href="#" data-section="algorithms" data-filter="all" tabindex="-1">All</a></li>
+          <li role="none"><a role="menuitem" href="#" data-section="algorithms" data-filter="classical" tabindex="-1">Classical</a></li>
+          <li role="none"><a role="menuitem" href="#" data-section="algorithms" data-filter="pqc" tabindex="-1">PQC</a></li>
+        </ul>
+      </li>
+      <li><a href="#" data-section="run-test">Simulations</a></li>
+      <li><a href="#" data-section="reports">Reports</a></li>
+  <li><a href="#" data-section="resources">Resources</a></li>
+  <li><a href="#" data-section="benchmarks">Benchmarks</a></li>
+  <li><a href="#" data-section="about">About</a></li>
+  <li class="nav-profile"><a href="#" data-section="profile"><img class="nav-avatar" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><circle fill='%231f2a45' cx='32' cy='32' r='32'/><circle fill='%234da6ff' cx='32' cy='24' r='14'/><path fill='%234da6ff' d='M14 54c4-10 14-16 18-16s14 6 18 16v2H14z'/></svg>" alt="Default profile avatar" /> My Profile</a></li>
+    </ul>
+  </nav>
+
+  <main>
+    <section id="welcome!" class="welcome">
+      <h2 style="margin:0 0 .75rem">Accelerate Your Transition to Quantum‑Safe Cryptography</h2>
+      <p style="font-size:.9rem;opacity:.85;margin:0 0 1.1rem;max-width:760px">Test, simulate, and deploy post‑quantum protection before the quantum threat arrives.</p>
+      <p style="font-size:.8rem;opacity:.78;max-width:820px;margin:0 0 1.1rem">Quantum computers will break today’s public‑key defenses—long before they exist at scale, harvested data is already at risk. This platform helps your organization map cryptographic exposure, run realistic classical + PQC hybrid simulations, benchmark performance impacts, and plan a phased migration with confidence.</p>
+      <ul style="font-size:.75rem;line-height:1.45;columns:2;max-width:880px;gap:2.5rem;margin:0 0 1.25rem;padding:0;list-style:disc inside;opacity:.86">
+        <li>Inventory & classify cryptographic usage</li>
+        <li>Simulate classical + PQC hybrids</li>
+        <li>Benchmark handshake & size impact</li>
+        <li>Model rotation & deprecation policy</li>
+        <li>Prioritize long‑lived data risk</li>
+        <li>Generate readiness & compliance reports</li>
+      </ul>
+      <p style="font-size:.75rem;opacity:.7;max-width:760px;margin:0 0 1.2rem">Core PQC focus: Kyber (KEM), Dilithium & Falcon (signatures), SPHINCS+ (hash‑based fallback) alongside classical baselines (RSA, ECDH, ECDSA) for hybrid evaluation.</p>
+      <div style="display:flex;flex-wrap:wrap;gap:.75rem;margin-bottom:1.2rem">
+        <a href="#" data-section="algorithms" class="cta">Explore Algorithms</a>
+  <a href="#" data-section="run-test" class="cta">Run a Hybrid Simulation</a>
+  <a href="#" data-section="reports" class="cta">View Reports</a>
+      </div>
+      <p style="font-size:.7rem;opacity:.55;max-width:760px;margin:0">From discovery to deployment, this workspace provides a controlled environment to experiment, measure, and harden your cryptography—before the quantum era forces the issue.</p>
+    </section>
+
+    <section id="algorithms" class="app-section">
+      <h2>Algorithms</h2>
+      <p style="font-size:.8rem;opacity:.7;margin:.25rem 0 1rem">Separated into classical (currently deployed) and post‑quantum (PQC) candidates.</p>
+      <button onclick="loadAlgorithms()">Load / Refresh Lists</button>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1.5rem;margin-top:1.25rem;align-items:start">
+        <div id="classical">
+          <h3 style="margin:0 0 .5rem;font-size:1rem;color:#81a1c1">Classical Algorithms</h3>
+          <ul id="classical-list"></ul>
+        </div>
+        <div id="pqc">
+          <h3 style="margin:0 0 .5rem;font-size:1rem;color:#81a1c1">PQC Algorithms</h3>
+          <ul id="pqc-list"></ul>
+        </div>
+      </div>
+    </section>
+
+  <section id="run-test" class="app-section">
+      <h2>Run a Test:</h2>
+      <form onsubmit="runTest(event)">
+        <label for="algo">Algorithm ID:</label>
+        <input type="number" id="algo" name="algo" required>
+
+        <label for="data">Input Data:</label>
+        <textarea id="data" name="data" rows="3"></textarea>
+
+        <button type="submit">Run Test</button>
+      </form>
+      <pre id="test-result"></pre>
+    </section>
+
+  <section id="reports" class="app-section">
+      <h2>Reports:</h2>
+      <button onclick="loadReports()">Load Reports</button>
+      <ul id="report-list"></ul>
+    </section>
+
+    <section id="resources" class="app-section">
+      <h2>Resources</h2>
+      <p style="font-size:.75rem;opacity:.78;max-width:700px">Curated links and references to accelerate your quantum‑safe transition.</p>
+      <ul style="margin-top:.75rem;font-size:.72rem;opacity:.85">
+        <li><a href="https://csrc.nist.gov/Projects/post-quantum-cryptography" target="_blank" style="color:#80bfff">NIST PQC Standardization</a></li>
+        <li><a href="https://www.rfc-editor.org/" target="_blank" style="color:#80bfff">IETF Drafts (hybrid KEM, key encapsulation)</a></li>
+        <li><a href="https://owasp.org/www-project-proactive-controls/" target="_blank" style="color:#80bfff">OWASP Crypto Guidance</a></li>
+        <li><a href="https://quantum-safe.csa" target="_blank" style="color:#80bfff">(Sample) Migration Playbooks</a></li>
+      </ul>
+    </section>
+
+    <section id="benchmarks" class="app-section">
+      <h2>Benchmarks</h2>
+      <p style="font-size:.75rem;opacity:.78;max-width:700px">Planned performance comparison area for classical vs hybrid vs PQC algorithms (handshake time, key sizes, signature sizes).</p>
+      <p style="font-size:.7rem;opacity:.6;margin-top:.75rem">Coming soon: inline charts, latency distribution, size overhead radar, and energy estimates.</p>
+    </section>
+
+    <section id="about" class="app-section">
+      <h2>About</h2>
+      <p style="font-size:.75rem;opacity:.78;max-width:700px">This experimental interface demonstrates an integrated workspace for evaluating post‑quantum cryptography adoption strategies. It is a front‑end only prototype: data, users, and tests are simulated in‑browser.</p>
+      <ul style="margin-top:.85rem;font-size:.7rem;opacity:.75;list-style:disc inside">
+        <li>No real cryptographic operations are executed.</li>
+        <li>All user accounts are stored locally in localStorage.</li>
+        <li>Visual layers (photons & plasma) are GPU‑friendly canvas animations.</li>
+      </ul>
+    </section>
+
+    <section id="profile" class="app-section">
+      <h2>My Profile</h2>
+      <div style="display:flex;align-items:center;gap:1rem;margin:.25rem 0 1.2rem">
+        <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'><circle fill='%231f2a45' cx='64' cy='64' r='64'/><circle fill='%234da6ff' cx='64' cy='46' r='28'/><path fill='%234da6ff' d='M28 108c8-22 28-34 36-34s28 12 36 34v4H28z'/></svg>" alt="Default profile avatar" style="width:88px;height:88px;border-radius:50%;border:2px solid #35507a;box-shadow:0 0 12px -2px rgba(80,160,255,.45)" />
+        <div style="font-size:.74rem;opacity:.82;line-height:1.45">
+          <div style="font-size:.9rem;color:#cfe9ff;font-weight:600;letter-spacing:.5px">Guest User</div>
+          <div>Role: <span style="color:#81a1c1">Viewer</span></div>
+          <div>Status: <span style="color:#4da6ff">Active (Local Demo)</span></div>
+          <div style="opacity:.6">Login to personalize this profile.</div>
+        </div>
+      </div>
+      <p style="font-size:.7rem;opacity:.65;max-width:640px">In a future version this panel will surface: account metadata, key inventory ownership, cryptographic usage summary, and migration readiness score. For now it’s a static placeholder with a default avatar illustrating where user identity features will live.</p>
+    </section>
+  </main>
+  <script src="script.js"></script>
+</body>
+</html>

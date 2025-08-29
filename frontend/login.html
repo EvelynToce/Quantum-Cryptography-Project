@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Login – QSC Platform</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <canvas id="photons" aria-hidden="true"></canvas>
+  <header>
+    <h1>Quantum-Safe Cryptography Platform</h1>
+    <nav>
+      <a href="index.html">Home</a>
+      <span class="nav-sep">/</span>
+      <a href="signup.html">Sign Up</a>
+    </nav>
+  </header>
+  <main style="max-width:600px; margin:2rem auto;">
+    <section>
+      <h2>Login</h2>
+      <form id="login-form">
+        <label for="login-email">Email</label>
+        <input type="email" id="login-email" required>
+        <label for="login-password">Password</label>
+        <input type="password" id="login-password" required>
+        <button type="submit">Login</button>
+        <p style="margin-top:1rem; font-size:.85rem;">Need an account? <a href="signup.html">Sign up</a></p>
+      </form>
+      <pre id="login-result"></pre>
+    </section>
+  </main>
+  <script src="script.js"></script>
+</body>
+</html>
