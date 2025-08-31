@@ -18,47 +18,7 @@
     <nav class="main-nav" aria-label="Primary">
       <ul class="menu-root">
         <li><a href="#" class="nav-home" aria-current="page">Home</a></li>
-        <li class="dropdown">
-          <button
-            class="drop-toggle"
-            aria-haspopup="true"
-            aria-expanded="false"
-          >
-            Algorithms ▾
-          </button>
-          <ul class="dropdown-menu" role="menu">
-            <li role="none">
-              <a
-                role="menuitem"
-                href="#"
-                data-section="algorithms"
-                data-filter="all"
-                tabindex="-1"
-                >All</a
-              >
-            </li>
-            <li role="none">
-              <a
-                role="menuitem"
-                href="#"
-                data-section="algorithms"
-                data-filter="classical"
-                tabindex="-1"
-                >Classical</a
-              >
-            </li>
-            <li role="none">
-              <a
-                role="menuitem"
-                href="#"
-                data-section="algorithms"
-                data-filter="pqc"
-                tabindex="-1"
-                >PQC</a
-              >
-            </li>
-          </ul>
-        </li>
+        <li><a href="#" data-section="algorithms">Algorithms</a></li>
         <li><a href="#" data-section="run-test">Simulations</a></li>
         <li><a href="#" data-section="reports">Reports</a></li>
         <li><a href="#" data-section="resources">Resources</a></li>
@@ -78,16 +38,18 @@
     </nav>
 
     <main>
-      <section id="welcome!" class="welcome">
+      <section id="welcome!" class="welcome floating">
         <h2 style="margin: 0 0 0.75rem">
-          Accelerate Your Transition to Quantum‑Safe Cryptography
+          Accelerate Your Transition to
+          <span class="glow-text">Quantum‑Safe Cryptography</span>
         </h2>
         <p
           style="
-            font-size: 0.9rem;
-            opacity: 0.85;
-            margin: 0 0 1.1rem;
+            font-size: 1rem;
+            opacity: 0.9;
+            margin: 0 0 1.2rem;
             max-width: 760px;
+            line-height: 1.7;
           "
         >
           Test, simulate, and deploy post‑quantum protection before the quantum
@@ -164,13 +126,16 @@
         </p>
       </section>
 
-      <section id="algorithms" class="app-section">
-        <h2>Algorithms</h2>
-        <p style="font-size: 0.8rem; opacity: 0.7; margin: 0.25rem 0 1rem">
+      <section id="algorithms" class="app-section glass-card">
+        <h2><span class="glow-text">Algorithms</span></h2>
+        <p style="font-size: 0.85rem; opacity: 0.8; margin: 0.5rem 0 1.5rem">
           Separated into classical (currently deployed) and post‑quantum (PQC)
-          candidates.
+          candidates. <span class="status-indicator"></span> Live data
+          connection
         </p>
-        <button onclick="loadAlgorithms()">Load / Refresh Lists</button>
+        <button onclick="loadAlgorithms()" class="primary">
+          Load / Refresh Lists
+        </button>
         <div
           style="
             display: grid;
@@ -195,23 +160,34 @@
         </div>
       </section>
 
-      <section id="run-test" class="app-section">
-        <h2>Run a Test:</h2>
+      <section id="run-test" class="app-section glass-card">
+        <h2><span class="glow-text">Run a Test:</span></h2>
         <form onsubmit="runTest(event)">
           <label for="algo">Algorithm ID:</label>
-          <input type="number" id="algo" name="algo" required />
+          <input
+            type="number"
+            id="algo"
+            name="algo"
+            placeholder="Enter algorithm ID"
+            required
+          />
 
           <label for="data">Input Data:</label>
-          <textarea id="data" name="data" rows="3"></textarea>
+          <textarea
+            id="data"
+            name="data"
+            rows="3"
+            placeholder="Enter your test data here..."
+          ></textarea>
 
-          <button type="submit">Run Test</button>
+          <button type="submit" class="primary">Run Test</button>
         </form>
-        <pre id="test-result"></pre>
+        <pre id="test-result" class="quantum-grid"></pre>
       </section>
 
-      <section id="reports" class="app-section">
-        <h2>Reports:</h2>
-        <button onclick="loadReports()">Load Reports</button>
+      <section id="reports" class="app-section glass-card">
+        <h2><span class="glow-text">Reports:</span></h2>
+        <button onclick="loadReports()" class="primary">Load Reports</button>
         <ul id="report-list"></ul>
       </section>
 
@@ -340,6 +316,45 @@
         </p>
       </section>
     </main>
+    <footer>
+      <div class="footer-content">
+        <div class="footer-section">
+          <h3>Quantum-Safe Cryptography Platform</h3>
+          <p>
+            Securing the future with quantum-resistant encryption technologies.
+          </p>
+        </div>
+        <div class="footer-section">
+          <h4>Resources</h4>
+          <ul>
+            <li><a href="#">Documentation</a></li>
+            <li><a href="#">API Reference</a></li>
+            <li><a href="#">Security Reports</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h4>Support</h4>
+          <ul>
+            <li><a href="#">Help Center</a></li>
+            <li><a href="#">Contact Us</a></li>
+            <li><a href="#">Community</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h4>Legal</h4>
+          <ul>
+            <li><a href="#">Privacy Policy</a></li>
+            <li><a href="#">Terms of Service</a></li>
+            <li><a href="#">Security</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>
+          &copy; 2025 Quantum-Safe Cryptography Platform. All rights reserved.
+        </p>
+      </div>
+    </footer>
     <script src="script.js"></script>
   </body>
 </html>

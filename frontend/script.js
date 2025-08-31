@@ -186,11 +186,10 @@ window.addEventListener("DOMContentLoaded", () => {
   initPlasma();
   initPhotons();
   initAuthForms();
-  initNavDropdown();
   initSectionRouting();
 });
 
-// Photon background visualization
+// Enhanced Photon background visualization with smoother animation
 function initPhotons() {
   const canvas = document.getElementById("photons");
   if (!canvas || !canvas.getContext) return;
@@ -198,109 +197,216 @@ function initPhotons() {
   let w,
     h,
     photons = [];
-  let PHOTON_COUNT = 90; // base for side panel
+  let PHOTON_COUNT = 90;
+  let lastTime = 0;
+  let animationId;
+
+  // Performance optimization
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = "high";
+
   function resize() {
     w = canvas.width = Math.floor(window.innerWidth * 0.4);
     h = canvas.height = window.innerHeight;
-    PHOTON_COUNT = Math.max(50, Math.floor(180 * (w / 800)));
+    PHOTON_COUNT = Math.max(50, Math.floor(120 * (w / 800))); // Reduced count for better performance
     if (photons.length > PHOTON_COUNT) photons.length = PHOTON_COUNT;
   }
+
   window.addEventListener("resize", resize);
   resize();
+
   const palette = [
     [180, 220, 255],
     [120, 170, 255],
     [80, 140, 255],
     [140, 120, 255],
+    [100, 200, 255],
+    [160, 160, 255],
   ];
+
   function spawn() {
-    const speed = 0.2 + Math.random() * 0.9;
+    const speed = 0.3 + Math.random() * 0.8;
     const angle = Math.random() * Math.PI * 2;
-    const dist = Math.random() * Math.max(w, h) * 0.6;
-    const baseX = w / 2 + Math.cos(angle) * dist * 0.15;
-    const baseY = h / 2 + Math.sin(angle) * dist * 0.15;
-    const driftAngle = angle + (Math.random() * 0.8 - 0.4);
+    const dist = Math.random() * Math.max(w, h) * 0.7;
+    const baseX = w / 2 + Math.cos(angle) * dist * 0.2;
+    const baseY = h / 2 + Math.sin(angle) * dist * 0.2;
+    const driftAngle = angle + (Math.random() * 0.6 - 0.3);
     const color = palette[Math.floor(Math.random() * palette.length)];
+
     return {
       x: baseX,
       y: baseY,
       vx: Math.cos(driftAngle) * speed,
       vy: Math.sin(driftAngle) * speed,
       life: 0,
-      maxLife: 400 + Math.random() * 600,
-      r: (0.7 + Math.random() * 2.4) * 2.2,
+      maxLife: 500 + Math.random() * 800,
+      r: (0.8 + Math.random() * 2.2) * 2.5,
       c: color,
+      opacity: 0.8 + Math.random() * 0.2,
+      pulsePhase: Math.random() * Math.PI * 2,
     };
   }
+
+  // Initialize photons
   for (let i = 0; i < PHOTON_COUNT; i++) photons.push(spawn());
-  function step() {
+
+  function step(currentTime) {
+    // Calculate delta time for smooth animation regardless of framerate
+    const deltaTime = currentTime - lastTime;
+    lastTime = currentTime;
+    const normalizedDelta = Math.min(deltaTime / 16.67, 2); // Cap at 2x normal speed
+
+    // Clear with smoother fade
     ctx.globalCompositeOperation = "source-over";
-    ctx.fillStyle = "rgba(5,7,15,0.18)";
+    ctx.fillStyle = "rgba(5,7,15,0.12)"; // Reduced for smoother trails
     ctx.fillRect(0, 0, w, h);
+
     ctx.globalCompositeOperation = "lighter";
+
+    // Maintain photon count
     while (photons.length < PHOTON_COUNT) photons.push(spawn());
-    for (let p of photons) {
-      p.x += p.vx;
-      p.y += p.vy;
-      p.life++;
-      const dx = w * 0.55 - p.x;
-      const dy = h / 2 - p.y;
-      p.vx += dx * 0.00002;
-      p.vy += dy * 0.00002;
+
+    for (let i = photons.length - 1; i >= 0; i--) {
+      const p = photons[i];
+
+      // Smooth movement with delta time
+      p.x += p.vx * normalizedDelta;
+      p.y += p.vy * normalizedDelta;
+      p.life += normalizedDelta;
+      p.pulsePhase += 0.05 * normalizedDelta;
+
+      // Gentle attraction towards center-right with smoother physics
+      const targetX = w * 0.6;
+      const targetY = h * 0.5;
+      const dx = targetX - p.x;
+      const dy = targetY - p.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+
+      // Smooth acceleration
+      const attraction = 0.00003 * normalizedDelta;
+      p.vx += (dx / distance) * attraction;
+      p.vy += (dy / distance) * attraction;
+
+      // Apply gentle damping for more natural movement
+      p.vx *= 0.999;
+      p.vy *= 0.999;
+
+      // Check bounds and respawn
       if (
-        p.x < -50 ||
-        p.x > w + 50 ||
-        p.y < -50 ||
-        p.y > h + 50 ||
+        p.x < -100 ||
+        p.x > w + 100 ||
+        p.y < -100 ||
+        p.y > h + 100 ||
         p.life > p.maxLife
       ) {
-        Object.assign(p, spawn());
+        photons[i] = spawn();
         continue;
       }
-      const fade = Math.sin((p.life / p.maxLife) * Math.PI);
-      const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r * 24);
-      const [r, gc, b] = p.c;
-      g.addColorStop(0, `rgba(${r},${gc},${b},${0.25 * fade})`);
-      g.addColorStop(0.4, `rgba(${r},${gc},${b},${0.08 * fade})`);
-      g.addColorStop(1, "rgba(0,0,0,0)");
-      ctx.fillStyle = g;
+
+      // Smoother opacity calculation with pulsing
+      const lifeFade = Math.sin((p.life / p.maxLife) * Math.PI);
+      const pulse = 0.5 + 0.5 * Math.sin(p.pulsePhase);
+      const finalOpacity = lifeFade * p.opacity * (0.7 + 0.3 * pulse);
+
+      // Enhanced gradient rendering
+      const gradient = ctx.createRadialGradient(
+        p.x,
+        p.y,
+        0,
+        p.x,
+        p.y,
+        p.r * 25
+      );
+      const [r, g, b] = p.c;
+
+      gradient.addColorStop(0, `rgba(${r},${g},${b},${0.4 * finalOpacity})`);
+      gradient.addColorStop(0.2, `rgba(${r},${g},${b},${0.25 * finalOpacity})`);
+      gradient.addColorStop(0.5, `rgba(${r},${g},${b},${0.1 * finalOpacity})`);
+      gradient.addColorStop(1, "rgba(0,0,0,0)");
+
+      ctx.fillStyle = gradient;
       ctx.beginPath();
-      ctx.arc(p.x, p.y, p.r * 20, 0, Math.PI * 2);
+      ctx.arc(p.x, p.y, p.r * 22, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Add a subtle inner glow
+      const innerGradient = ctx.createRadialGradient(
+        p.x,
+        p.y,
+        0,
+        p.x,
+        p.y,
+        p.r * 8
+      );
+      innerGradient.addColorStop(
+        0,
+        `rgba(${r + 30},${g + 30},${b + 30},${0.6 * finalOpacity})`
+      );
+      innerGradient.addColorStop(
+        0.7,
+        `rgba(${r},${g},${b},${0.2 * finalOpacity})`
+      );
+      innerGradient.addColorStop(1, "rgba(0,0,0,0)");
+
+      ctx.fillStyle = innerGradient;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r * 8, 0, Math.PI * 2);
       ctx.fill();
     }
-    requestAnimationFrame(step);
+
+    animationId = requestAnimationFrame(step);
   }
-  step();
+
+  // Start animation
+  animationId = requestAnimationFrame(step);
+
+  // Cleanup function
+  return () => {
+    if (animationId) {
+      cancelAnimationFrame(animationId);
+    }
+  };
 }
 
-// Plasma noise background (low-res upscaled for performance)
+// Enhanced Plasma noise background with smoother animation
 function initPlasma() {
   const canvas = document.getElementById("plasma-bg");
   if (!canvas || !canvas.getContext) return;
   const ctx = canvas.getContext("2d");
-  let w, h, bw, bh; // bw/bh = buffer size
+  let w, h, bw, bh;
+  let lastTime = 0;
+  let animationId;
+
+  // Performance optimization
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = "high";
 
   function resize() {
     w = canvas.width = window.innerWidth;
     h = canvas.height = window.innerHeight;
-    // Low resolution buffer for speed, scale up via canvas size
-    bw = Math.min(360, Math.max(220, Math.floor(w / 5)));
-    bh = Math.min(320, Math.max(180, Math.floor(h / 5)));
+    // Optimized buffer size for better performance
+    bw = Math.min(300, Math.max(180, Math.floor(w / 6)));
+    bh = Math.min(270, Math.max(150, Math.floor(h / 6)));
   }
+
   window.addEventListener("resize", resize);
   resize();
 
-  // Color stops representing "science" colors (cyan, violet, magenta, lime)
+  // Enhanced color palette with smoother transitions
   const stops = [
     [0.0, [8, 16, 34]],
-    [0.2, [55, 186, 205]], // subdued cyan
-    [0.45, [126, 54, 205]], // subdued violet
+    [0.15, [25, 40, 65]],
+    [0.3, [55, 186, 205]], // subdued cyan
+    [0.5, [126, 54, 205]], // subdued violet
     [0.7, [195, 60, 168]], // subdued magenta
+    [0.85, [150, 120, 200]], // transition color
     [1.0, [126, 194, 58]], // subdued lime
   ];
+
   function lerp(a, b, t) {
     return a + (b - a) * t;
   }
+
   function samplePalette(t) {
     t = Math.min(1, Math.max(0, t));
     for (let i = 0; i < stops.length - 1; i++) {
@@ -308,61 +414,75 @@ function initPlasma() {
       const s1 = stops[i + 1];
       if (t >= s0[0] && t <= s1[0]) {
         const lt = (t - s0[0]) / (s1[0] - s0[0]);
+        // Smooth interpolation
+        const smoothT = lt * lt * (3 - 2 * lt); // Smoothstep
         return [
-          Math.floor(lerp(s0[1][0], s1[1][0], lt)),
-          Math.floor(lerp(s0[1][1], s1[1][1], lt)),
-          Math.floor(lerp(s0[1][2], s1[1][2], lt)),
+          Math.floor(lerp(s0[1][0], s1[1][0], smoothT)),
+          Math.floor(lerp(s0[1][1], s1[1][1], smoothT)),
+          Math.floor(lerp(s0[1][2], s1[1][2], smoothT)),
         ];
       }
     }
     return stops[stops.length - 1][1];
   }
 
-  let lastTime = 0;
-  function frame(ts) {
-    const dt = ts - lastTime;
-    lastTime = ts;
+  // Pre-create offscreen canvas for better performance
+  const offscreenCanvas = document.createElement("canvas");
+  const offscreenCtx = offscreenCanvas.getContext("2d");
+  offscreenCanvas.width = bw;
+  offscreenCanvas.height = bh;
+
+  function frame(currentTime) {
+    const deltaTime = currentTime - lastTime;
+    lastTime = currentTime;
+
+    // Smoother time progression
+    const t = currentTime * 0.0003; // Slightly slower for smoother animation
+    const DARKEN = 0.85; // Slightly brighter
+
     // Generate plasma into offscreen ImageData
-    const img = ctx.createImageData(bw, bh);
+    const img = offscreenCtx.createImageData(bw, bh);
     const data = img.data;
-    const t = ts * 0.00045;
-    const DARKEN = 0.78; // global darkening factor
+
     for (let y = 0; y < bh; y++) {
       for (let x = 0; x < bw; x++) {
-        const nx = x / bw,
-          ny = y / bh;
-        // Layered sine pattern for smooth plasma
-        const v =
-          (Math.sin(nx * 6 + t * 2) +
-            Math.sin((nx + ny) * 5 - t * 1.4) +
-            Math.sin(Math.sqrt(nx * nx + ny * ny) * 9 + t * 1.1)) /
-          3; // -1..1
+        const nx = x / bw;
+        const ny = y / bh;
+
+        // Enhanced plasma calculation with smoother waves
+        const wave1 = Math.sin(nx * 7 + t * 1.8);
+        const wave2 = Math.sin((nx + ny) * 4.5 - t * 1.2);
+        const wave3 = Math.sin(Math.sqrt(nx * nx + ny * ny) * 8.5 + t * 0.9);
+        const wave4 = Math.sin((nx - ny) * 3.2 + t * 1.5); // Additional wave for complexity
+
+        const v = (wave1 + wave2 + wave3 + wave4) / 4; // -1..1
         const n = (v + 1) / 2; // 0..1
+
         let [r, g, b] = samplePalette(n);
         r = Math.floor(r * DARKEN);
         g = Math.floor(g * DARKEN);
         b = Math.floor(b * DARKEN);
+
         const idx = (y * bw + x) * 4;
         data[idx] = r;
         data[idx + 1] = g;
         data[idx + 2] = b;
+        // Smoother alpha variation
         data[idx + 3] = Math.floor(
-          170 * (0.45 + 0.55 * Math.sin(t * 0.7 + n * 3))
-        ); // slightly lower alpha
+          180 * (0.5 + 0.5 * Math.sin(t * 0.6 + n * 2.5))
+        );
       }
     }
-    // Draw scaled
-    // Use temp canvas scale: drawImage will scale up automatically
-    // Put imageData on an offscreen canvas for smoothing
-    const off = document.createElement("canvas");
-    off.width = bw;
-    off.height = bh;
-    off.getContext("2d").putImageData(img, 0, 0);
+
+    // Render to offscreen canvas
+    offscreenCtx.putImageData(img, 0, 0);
+
+    // Clear main canvas and draw scaled image
     ctx.clearRect(0, 0, w, h);
     ctx.globalCompositeOperation = "source-over";
-    ctx.imageSmoothingEnabled = true;
-    ctx.drawImage(off, 0, 0, w, h);
-    // Light overlay for brightness even if plasma dark zone
+    ctx.drawImage(offscreenCanvas, 0, 0, w, h);
+
+    // Enhanced light overlay with smoother gradients
     ctx.globalCompositeOperation = "overlay";
     const grd = ctx.createRadialGradient(
       w * 0.25,
@@ -370,15 +490,25 @@ function initPlasma() {
       w * 0.05,
       w * 0.25,
       h * 0.35,
-      w * 0.9
+      w * 0.85
     );
-    grd.addColorStop(0, "rgba(255,255,255,0.08)");
+    grd.addColorStop(0, "rgba(255,255,255,0.12)");
+    grd.addColorStop(0.4, "rgba(255,255,255,0.06)");
     grd.addColorStop(1, "rgba(0,0,0,0)");
     ctx.fillStyle = grd;
     ctx.fillRect(0, 0, w, h);
-    requestAnimationFrame(frame);
+
+    animationId = requestAnimationFrame(frame);
   }
-  requestAnimationFrame(frame);
+
+  animationId = requestAnimationFrame(frame);
+
+  // Cleanup function
+  return () => {
+    if (animationId) {
+      cancelAnimationFrame(animationId);
+    }
+  };
 }
 
 // Auth forms (mock only; not secure, just demo)
@@ -451,71 +581,6 @@ function updateCurrentNav(id) {
     const active = Array.from(topLinks).find((a) => a.dataset.section === id);
     if (active) active.setAttribute("aria-current", "page");
   }
-}
-function highlightFilter(f) {
-  document
-    .querySelectorAll(".dropdown-menu a")
-    .forEach((a) => a.classList.remove("is-filter-active"));
-  const match = document.querySelector(`.dropdown-menu a[data-filter="${f}"]`);
-  if (match) match.classList.add("is-filter-active");
-}
-
-// Navigation dropdown
-function initNavDropdown() {
-  const dropdown = document.querySelector(".dropdown");
-  if (!dropdown) return;
-  const btn = dropdown.querySelector(".drop-toggle");
-  const menu = dropdown.querySelector(".dropdown-menu");
-  function open() {
-    dropdown.classList.add("open");
-    btn.setAttribute("aria-expanded", "true"); // set first item focusable
-    const first = menu.querySelector("a");
-    if (first) first.tabIndex = 0;
-  }
-  function close() {
-    dropdown.classList.remove("open");
-    btn.setAttribute("aria-expanded", "false");
-    menu.querySelectorAll("a").forEach((a) => (a.tabIndex = -1));
-  }
-  btn.addEventListener("click", (e) => {
-    e.stopPropagation();
-    dropdown.classList.toggle("open");
-    const expanded = btn.getAttribute("aria-expanded") === "true";
-    expanded ? close() : open();
-  });
-  document.addEventListener("click", (e) => {
-    if (!dropdown.contains(e.target)) close();
-  });
-  btn.addEventListener("keydown", (e) => {
-    if (e.key === "ArrowDown") {
-      open();
-      e.preventDefault();
-    }
-  });
-  menu.addEventListener("keydown", (e) => {
-    const items = Array.from(menu.querySelectorAll("a"));
-    const idx = items.indexOf(document.activeElement);
-    if (e.key === "Escape") {
-      close();
-      btn.focus();
-    } else if (e.key === "ArrowDown") {
-      e.preventDefault();
-      const next = items[(idx + 1) % items.length];
-      next.focus();
-    } else if (e.key === "ArrowUp") {
-      e.preventDefault();
-      const prev = items[(idx - 1 + items.length) % items.length];
-      prev.focus();
-    } else if (e.key === "Home") {
-      e.preventDefault();
-      items[0].focus();
-    } else if (e.key === "End") {
-      e.preventDefault();
-      items[items.length - 1].focus();
-    }
-  });
-  // initialize menu items as unfocusable until open
-  menu.querySelectorAll("a").forEach((a) => (a.tabIndex = -1));
 }
 
 // Section routing: show only selected section
@@ -622,17 +687,6 @@ function initSectionRouting() {
         current = id;
         if (id === "algorithms") loadAlgorithms();
         if (id === "reports") loadReports();
-        const h2 = target.querySelector("h2");
-        if (h2) {
-          setTimeout(() => {
-            h2.setAttribute("tabindex", "-1");
-            h2.focus();
-          }, 180);
-        }
-        window.scrollTo({
-          top: document.querySelector("main").offsetTop - 10,
-          behavior: "smooth",
-        });
         updateCurrentNav(id);
       }
       links.forEach((l) =>
